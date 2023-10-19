@@ -36,9 +36,18 @@ public class ParseTask extends Task<Void> {
             brandFilter.append("&filter[producer][]=").append(brand);
         }
 
+        updateMessage("Подключение к серверу...");
+        updateProgress(0, 10000);
+
         List<String> categoryList = getCategoriesList();
+        int part = 9100 / categoryList.size();
+        int partInProgress = part;
+
         for (String category : categoryList) {
             collectNomenclatures(category, 1, String.valueOf(brandFilter));
+            updateMessage("Сбор по категории " + category);
+            updateProgress(partInProgress, 10000);
+            partInProgress += part;
         }
 
         createExcel();
@@ -61,7 +70,7 @@ public class ParseTask extends Task<Void> {
                 .userAgent(getUserAgent())
                 .timeout(5000)
                 .ignoreContentType(true)
-                .ignoreHttpErrors(false)
+                .ignoreHttpErrors(true)
                 .referrer(Const.REFERRER)
                 .get();
 
@@ -84,7 +93,7 @@ public class ParseTask extends Task<Void> {
         Element paginator = document.body().getElementById("j-paginator");
         if (paginator != null) {
             boolean isHasNext = !paginator.getElementsByAttributeValue("rel", "next").isEmpty();
-            if (isHasNext){
+            if (isHasNext) {
                 int nextPage = Integer.parseInt(Objects.requireNonNull(paginator.getElementsByAttributeValue("rel", "next").first()).attr("name"));
                 collectNomenclatures(category, nextPage, brandFilter);
             }
@@ -134,14 +143,14 @@ public class ParseTask extends Task<Void> {
         return result;
     }
 
-    private void createExcel(){
+    private void createExcel() {
         updateMessage("Создание excel файла...");
         updateProgress(9100, 10000);
         int startRow = 1;
         int startColumn = 1;
 
         //Создаю книгу excel
-        try(XSSFWorkbook wb = new XSSFWorkbook()) {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
             XSSFDataFormat df = wb.createDataFormat();
             CreationHelper creationHelper = wb.getCreationHelper();
             XSSFSheet sheet = wb.createSheet("Результаты");
@@ -213,12 +222,12 @@ public class ParseTask extends Task<Void> {
             oldPriceHead.setCellStyle(headStyle);
 
             XSSFCell rrcHead = head.createCell(++startColumn);
-            rrcHead.setCellValue("РРЦ, руб.");
+            rrcHead.setCellValue("Цена продажи, руб.");
             headStyle.setWrapText(true);
             rrcHead.setCellStyle(headStyle);
 
             XSSFCell deviationHead = head.createCell(++startColumn);
-            deviationHead.setCellValue("Отклонение от РРЦ, %.");
+            deviationHead.setCellValue("Отклонение от цены продажи, %.");
             headStyle.setWrapText(true);
             deviationHead.setCellStyle(headStyle);
 
@@ -275,23 +284,27 @@ public class ParseTask extends Task<Void> {
                 //Старая цена
                 XSSFCell oldPrice = content.createCell(++startColumnContent);
                 contentStyle.setWrapText(true);
-                if (!Objects.equals(nom.oldPrice(), "")){
+                if (!Objects.equals(nom.oldPrice(), "")) {
                     oldPrice.setCellValue(Double.parseDouble(nom.oldPrice()));
                 }
                 oldPrice.setCellStyle(contentDecimalStyle);
                 sheet.setColumnWidth(startColumnContent, 3808);
 
+                double sellPriceFromExcel = getSellPriceFromExcel(nom.id());
+
                 //РРЦ
-                XSSFCell rrc = content.createCell(++startColumnContent);
+                XSSFCell sellPrice = content.createCell(++startColumnContent);
                 contentStyle.setWrapText(true);
-                rrc.setCellValue(getRRCFromExcel(nom.id()));
-                rrc.setCellStyle(contentDecimalStyle);
+                sellPrice.setCellValue(sellPriceFromExcel);
+                sellPrice.setCellStyle(contentDecimalStyle);
                 sheet.setColumnWidth(startColumnContent, 3808);
 
                 //Отклонение
                 XSSFCell deviation = content.createCell(++startColumnContent);
                 contentStyle.setWrapText(true);
-                deviation.setCellValue(Double.parseDouble(nom.price()));
+                if (sellPriceFromExcel > 0) {
+                    deviation.setCellValue((Double.parseDouble(nom.price())/sellPriceFromExcel - 1) * 100);
+                }
                 deviation.setCellStyle(contentDecimalStyle);
                 sheet.setColumnWidth(startColumnContent, 3808);
 
@@ -313,8 +326,8 @@ public class ParseTask extends Task<Void> {
         }
     }
 
-    private double getRRCFromExcel(long id) throws IOException {
-        double rrc = 0d;
+    private double getSellPriceFromExcel(long id) throws IOException {
+        double sellPrice = 0d;
         int rowStart = 4;
 
         XSSFWorkbook workbook = new XSSFWorkbook(new FileInputStream(fileRRCPath));
@@ -324,7 +337,7 @@ public class ParseTask extends Task<Void> {
 
             if (row.getCell(16) != null) {
                 if (row.getCell(16).getNumericCellValue() == id) {
-                    rrc = row.getCell(13).getNumericCellValue();
+                    sellPrice = row.getCell(13).getNumericCellValue();
                     break;
                 }
                 rowStart++;
@@ -332,6 +345,6 @@ public class ParseTask extends Task<Void> {
         }
 
         workbook.close();
-        return rrc;
+        return sellPrice;
     }
 }
