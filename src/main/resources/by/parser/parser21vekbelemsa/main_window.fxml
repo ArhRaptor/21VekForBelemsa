@@ -14,86 +14,85 @@
 <?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="by.parser.parser21vekbelemsa.StartController">
-   <children>
-      <ImageView fitHeight="400.0" fitWidth="608.0" layoutX="-1.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <image>
-            <Image url="@../../../image/21-vek-minsk.jpg" />
-         </image>
-      </ImageView>
-      <Button fx:id="startButton" layoutX="478.0" layoutY="351.0" mnemonicParsing="false" onAction="#startApp" prefHeight="37.0" prefWidth="147.0" stylesheets="@../../../css/my.css" text="СТАРТ" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="30.0">
+   <ImageView fitHeight="400.0" fitWidth="608.0" layoutX="-1.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <Image url="@../../../image/21-vek-minsk.jpg" />
+   </ImageView>
+   <Button fx:id="startButton" layoutX="478.0" layoutY="351.0" mnemonicParsing="false" onAction="#startApp" prefHeight="37.0" prefWidth="147.0" stylesheets="@../../../css/my.css" text="СТАРТ" AnchorPane.bottomAnchor="12.0" AnchorPane.rightAnchor="30.0">
+      <effect>
+         <DropShadow />
+      </effect>
+   </Button>
+   <TextField fx:id="pathToSaveFile" layoutX="63.0" layoutY="311.0" prefHeight="25.0" prefWidth="338.0" promptText="Выберете путь и наименования файла" stylesheets="@../../../css/my.css" AnchorPane.bottomAnchor="64.0" AnchorPane.leftAnchor="63.0">
+      <effect>
+         <DropShadow />
+      </effect>
+   </TextField>
+   <Button fx:id="chooseButton" layoutX="423.0" layoutY="311.0" mnemonicParsing="false" onAction="#bntChoose" prefHeight="25.0" prefWidth="92.0" stylesheets="@../../../css/my.css" text="Выбрать" AnchorPane.bottomAnchor="64.0" AnchorPane.rightAnchor="85.0">
+      <effect>
+         <DropShadow />
+      </effect>
+   </Button>
+   <Label layoutX="63.0" layoutY="14.0" prefHeight="26.0" prefWidth="135.0" text="Выберите бренд" textFill="WHITE" AnchorPane.leftAnchor="63.0" AnchorPane.topAnchor="14.0">
+      <font>
+         <Font size="17.0" />
+      </font>
+      <effect>
+         <DropShadow />
+      </effect>
+   </Label>
+   <StackPane fx:id="stPane" layoutX="33.0" layoutY="159.0" prefHeight="82.0" prefWidth="534.0">
+      <Label fx:id="labelProgress" prefHeight="44.0" prefWidth="514.0" text="Label" visible="false" wrapText="true" StackPane.alignment="BOTTOM_CENTER">
          <effect>
-            <DropShadow />
-         </effect></Button>
-      <TextField fx:id="pathToSaveFile" layoutX="63.0" layoutY="311.0" prefHeight="25.0" prefWidth="338.0" promptText="Выберете путь и наименования файла" stylesheets="@../../../css/my.css" AnchorPane.bottomAnchor="64.0" AnchorPane.leftAnchor="63.0">
-         <effect>
-            <DropShadow />
-         </effect></TextField>
-      <Button fx:id="chooseButton" layoutX="423.0" layoutY="311.0" mnemonicParsing="false" onAction="#bntChoose" prefHeight="25.0" prefWidth="92.0" stylesheets="@../../../css/my.css" text="Выбрать" AnchorPane.bottomAnchor="64.0" AnchorPane.rightAnchor="85.0">
-         <effect>
-            <DropShadow />
-         </effect></Button>
-      <Label layoutX="63.0" layoutY="14.0" prefHeight="26.0" prefWidth="135.0" text="Выберите бренд" textFill="WHITE" AnchorPane.leftAnchor="63.0" AnchorPane.topAnchor="14.0">
-         <font>
-            <Font size="17.0" />
-         </font>
-         <effect>
-            <DropShadow />
+            <Blend />
          </effect>
+         <font>
+            <Font size="14.0" />
+         </font>
       </Label>
-      <StackPane fx:id="stPane" layoutX="33.0" layoutY="159.0" prefHeight="82.0" prefWidth="534.0">
-         <children>
-            <Label fx:id="labelProgress" prefHeight="44.0" prefWidth="514.0" text="Label" textFill="WHITE" visible="false" wrapText="true" StackPane.alignment="BOTTOM_CENTER">
-               <effect>
-                  <Blend />
-               </effect>
-               <font>
-                  <Font size="14.0" />
-               </font></Label>
-            <ProgressBar fx:id="pb" prefHeight="18.0" prefWidth="512.0" progress="0.0" stylesheets="@../../../css/my.css" visible="false" StackPane.alignment="TOP_CENTER">
-               <effect>
-                  <DropShadow />
-               </effect></ProgressBar>
-         </children>
-      </StackPane>
-      <CheckBox fx:id="cbSenso" disable="true" layoutX="57.0" layoutY="48.0" mnemonicParsing="false" text="SENSO" textFill="WHITE" AnchorPane.leftAnchor="63.0" AnchorPane.topAnchor="48.0">
-         <font>
-            <Font size="14.0" />
-         </font>
+      <ProgressBar fx:id="pb" prefHeight="18.0" prefWidth="512.0" progress="0.0" stylesheets="@../../../css/my.css" visible="false" StackPane.alignment="TOP_CENTER">
          <effect>
             <DropShadow />
          </effect>
-      </CheckBox>
-      <CheckBox fx:id="cbSensoBaby" disable="true" layoutX="57.0" layoutY="74.0" mnemonicParsing="false" text="SENSO BABY" textFill="WHITE" AnchorPane.leftAnchor="63.0" AnchorPane.topAnchor="78.0">
-         <font>
-            <Font size="14.0" />
-         </font>
-         <effect>
-            <DropShadow />
-         </effect>
-      </CheckBox>
-      <CheckBox fx:id="cbMiu" disable="true" layoutX="180.0" layoutY="48.0" mnemonicParsing="false" text="MIU" textFill="WHITE">
-         <font>
-            <Font size="14.0" />
-         </font>
-         <effect>
-            <DropShadow />
-         </effect>
-      </CheckBox>
-      <CheckBox fx:id="cbNihonBaby" disable="true" layoutX="180.0" layoutY="78.0" mnemonicParsing="false" text="NIHON BABY" textFill="WHITE">
-         <font>
-            <Font size="14.0" />
-         </font>
-         <effect>
-            <DropShadow />
-         </effect>
-      </CheckBox>
-      <CheckBox fx:id="cbSensoMed" disable="true" layoutX="300.0" layoutY="48.0" mnemonicParsing="false" text="SENSO MED" textFill="WHITE">
-         <font>
-            <Font size="14.0" />
-         </font>
-         <effect>
-            <DropShadow />
-         </effect>
-      </CheckBox>
-   </children>
+      </ProgressBar>
+   </StackPane>
+   <CheckBox fx:id="cbSenso" disable="true" layoutX="57.0" layoutY="48.0" mnemonicParsing="false" text="SENSO" textFill="WHITE" AnchorPane.leftAnchor="63.0" AnchorPane.topAnchor="48.0">
+      <font>
+         <Font size="14.0" />
+      </font>
+      <effect>
+         <DropShadow />
+      </effect>
+   </CheckBox>
+   <CheckBox fx:id="cbSensoBaby" disable="true" layoutX="57.0" layoutY="74.0" mnemonicParsing="false" text="SENSO BABY" textFill="WHITE" AnchorPane.leftAnchor="63.0" AnchorPane.topAnchor="78.0">
+      <font>
+         <Font size="14.0" />
+      </font>
+      <effect>
+         <DropShadow />
+      </effect>
+   </CheckBox>
+   <CheckBox fx:id="cbMiu" disable="true" layoutX="180.0" layoutY="48.0" mnemonicParsing="false" text="MIU" textFill="WHITE">
+      <font>
+         <Font size="14.0" />
+      </font>
+      <effect>
+         <DropShadow />
+      </effect>
+   </CheckBox>
+   <CheckBox fx:id="cbNihonBaby" disable="true" layoutX="180.0" layoutY="78.0" mnemonicParsing="false" text="NIHON BABY" textFill="WHITE">
+      <font>
+         <Font size="14.0" />
+      </font>
+      <effect>
+         <DropShadow />
+      </effect>
+   </CheckBox>
+   <CheckBox fx:id="cbSensoMed" disable="true" layoutX="300.0" layoutY="48.0" mnemonicParsing="false" text="SENSO MED" textFill="WHITE">
+      <font>
+         <Font size="14.0" />
+      </font>
+      <effect>
+         <DropShadow />
+      </effect>
+   </CheckBox>
 </AnchorPane>

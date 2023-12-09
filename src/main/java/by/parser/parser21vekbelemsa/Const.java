@@ -1,10 +1,10 @@
 package by.parser.parser21vekbelemsa;
 
 public class Const {
+    public static final String BASE_URL = "https://www.21vek.by/";
     public static final String REFERRER = "https://www.google.com/search?q=21+%D0%B2%D0%B5%D0%BA+%D1%81%D0%B0%D0%B9%D1%82&oq=21&gs_lcrp=EgZjaHJvbWUqCwgBEEUYJxg7GIoFMgsIABBFGCcYORiKBTILCAEQRRgnGDsYigUyDQgCEAAYgwEYsQMYgAQyDQgDEAAYgwEYsQMYgAQyEwgEEC4YgwEYrwEYxwEYsQMYgAQyDQgFEAAYgwEYsQMYgAQyDQgGEAAYgwEYsQMYigUyBwgHEAAYgAQyBwgIEAAYgAQyBwgJEAAYjwLSAQkyNDgwajBqMTWoAgCwAgA&sourceid=chrome&ie=UTF-8";
     public static final String CONFIG_FILE_NAME = "config.ini";
     public static final String USER_AGENT = "#userAgent";
-    public static final String CATEGORIES = "#categories";
     public static final String SENSO = "#senso";
     public static final String SENSO_BABY = "#babySenso";
     public static final String SENSO_MED = "#medSenso";
@@ -33,12 +33,6 @@ public class Const {
             #babySenso = senso_baby
             #nihonBaby = nihon_baby
             #miu = miu
-
-            ******************************************************************************************
-
-            *********************************Категории************************************************
-
-            #categories = diapers, underpads, adult_diapers
 
             ******************************************************************************************""";
 }

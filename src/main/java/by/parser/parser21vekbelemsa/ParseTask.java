@@ -9,11 +9,20 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 
 import java.io.*;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import static by.parser.parser21vekbelemsa.Const.BASE_URL;
 
 public class ParseTask extends Task<Void> {
     private final String path;
@@ -27,46 +36,63 @@ public class ParseTask extends Task<Void> {
     }
 
     private final List<Nomenclature> nomenclatures = new ArrayList<>();
+    private final List<String> links = new ArrayList<>();
+    private final List<String> linksToParse = new ArrayList<>();
+    private int currentProgressValue = 0;
 
     @Override
 
     protected Void call() throws Exception {
-        StringBuilder brandFilter = new StringBuilder();
-        for (String brand : brandList) {
-            brandFilter.append("&filter[producer][]=").append(brand);
-        }
-
         updateMessage("Подключение к серверу...");
-        updateProgress(0, 10000);
+        updateProgress(currentProgressValue, 10000);
 
-        List<String> categoryList = getCategoriesList();
-        int part = 9100 / categoryList.size();
-        int partInProgress = part;
+        int brandCost = 1000 / brandList.size();
 
-        for (String category : categoryList) {
-            collectNomenclatures(category, 1, String.valueOf(brandFilter));
-            updateMessage("Сбор по категории " + category);
-            updateProgress(partInProgress, 10000);
-            partInProgress += part;
+        for (String brand : brandList) {
+            collectCategoryValues(brand);
+
+            currentProgressValue += brandCost;
+
+            updateProgress(currentProgressValue, 10000);
+            updateMessage("Сбор ссылок по бренду " + brand);
         }
 
+        updateMessage("Запуск браузера....");
+
+        EdgeOptions options = new EdgeOptions();
+        options.addArguments("--remote-allow-origins=*");
+//        options.addArguments("--headless");
+
+        WebDriver driver = new EdgeDriver(options);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(2));
+        driver.manage().window().maximize();
+
+        System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+
+
+        int seleniumLinkCost = 3000 / linksToParse.size();
+        for (String link : linksToParse) {
+            updateMessage("Переход по ссылке " + link);
+            collectLinks(link, driver);
+
+            currentProgressValue += seleniumLinkCost;
+
+            updateProgress(currentProgressValue, 10000);
+        }
+
+        driver.quit();
+
+        collectNomenclatures();
+
+        updateProgress( 9000, 10000);
         createExcel();
         return null;
     }
 
-    private void collectNomenclatures(String category, int page, String brandFilter) throws IOException, InterruptedException {
-        int minDelayMillis = 2500;
-        int maxDelayMillis = 8000;
+    private void collectCategoryValues(String brand) throws IOException {
+        String url = BASE_URL + "info/brands/" + brand + ".html";
 
-        int randomDelay = minDelayMillis + new Random().nextInt(maxDelayMillis - minDelayMillis + 1);
-        Thread.sleep(randomDelay);
-
-        String baseUrl = "https://www.21vek.by/";
-        String pagePart = "/page:";
-
-        String resultUri = page == 1 ? baseUrl + category + "/all/?filter[good_status][]=in" + brandFilter : baseUrl + category + pagePart + page + "/?filter[good_status][]=in" + brandFilter;
-
-        Document document = Jsoup.connect(resultUri)
+        Document document = Jsoup.connect(url)
                 .userAgent(getUserAgent())
                 .timeout(5000)
                 .ignoreContentType(true)
@@ -74,53 +100,61 @@ public class ParseTask extends Task<Void> {
                 .referrer(Const.REFERRER)
                 .get();
 
-        Element productBlock = document.body().getElementById("j-search_result");
-        if (productBlock != null) {
-            Elements prodactElements = Objects.requireNonNull(productBlock).getElementsByAttributeValueStarting("class", "g-item-data j-item-data");
-            prodactElements.forEach(element -> {
-                String id = element.attr("data-code");
-                String name = element.attr("data-name");
-                String producer = element.attr("data-producer_name");
-                String categoryName = element.attr("data-category");
-                String oldPrice = element.attr("data-old_price");
-                String price = element.attr("data-price");
-                String link = productBlock.tagName("a").getElementsByAttributeValue("data-code", id).get(0).attr("href");
+        Elements categoryBlock = document.body().getElementsByAttributeValueStarting("class", "b-categories-full");
 
-                nomenclatures.add(new Nomenclature(Long.parseLong(id), name, producer, categoryName, oldPrice, price, link));
-            });
+        if (categoryBlock.isEmpty()) {
+            categoryBlock = document.body().getElementsByAttributeValueStarting("class", "b-categories-popular");
         }
 
-        Element paginator = document.body().getElementById("j-paginator");
-        if (paginator != null) {
-            boolean isHasNext = !paginator.getElementsByAttributeValue("rel", "next").isEmpty();
-            if (isHasNext) {
-                int nextPage = Integer.parseInt(Objects.requireNonNull(paginator.getElementsByAttributeValue("rel", "next").first()).attr("name"));
-                collectNomenclatures(category, nextPage, brandFilter);
-            }
+        Elements tagLiList = categoryBlock.get(0).getElementsByAttribute("href");
+
+        for (Element element : tagLiList) {
+            linksToParse.add(element.attr("href"));
         }
     }
 
-    private List<String> getCategoriesList() throws IOException {
-        List<String> list = new ArrayList<>();
+    private void collectLinks(String linkToParse, @org.jetbrains.annotations.NotNull WebDriver driver) {
 
-        BufferedReader reader = new BufferedReader(new FileReader(Const.CONFIG_FILE_NAME));
-        String line = reader.readLine();
+        JavascriptExecutor jse = (JavascriptExecutor) driver;
 
-        while (line != null) {
-            if (line.contains("=")) {
-                String trimmed = line.substring(line.indexOf("=") + 1).trim();
-                if (line.startsWith(Const.CATEGORIES)) {
-                    list = Stream.of(trimmed.split(","))
-                            .map(String::trim)
-                            .collect(Collectors.toList());
-                    break;
-                }
-            }
-            line = reader.readLine();
+        driver.get(linkToParse);
+        jse.executeScript("window.scrollBy(0,2500)", "");
+
+        List<WebElement> goods = driver.findElements(By.xpath("//div[@data-testid='product-list']//div[starts-with(@class, 'style_product')]//p[starts-with(@class, 'CardInfo')]//a"));
+
+        for (WebElement item : goods) {
+            String link = item.getAttribute("href");
+            links.add(link);
         }
-        reader.close();
+    }
 
-        return list;
+    private void collectNomenclatures() throws IOException {
+        int nomenclatureCost = 5000 / links.size();
+
+        for (String link : links) {
+            Document document = Jsoup.connect(link)
+                    .userAgent(getUserAgent())
+                    .timeout(5000)
+                    .ignoreContentType(true)
+                    .ignoreHttpErrors(true)
+                    .referrer(Const.REFERRER)
+                    .get();
+
+            Element element = Objects.requireNonNull(document.body().getElementById("j-item-buyzone")).child(1);
+
+            String id = element.getElementsByAttribute("data-code").get(0).attr("data-code");
+            String name = element.getElementsByAttribute("data-code").get(0).attr("data-name");
+            String producer = element.getElementsByAttribute("data-code").get(0).attr("data-producer_name");
+            String categoryName = element.getElementsByAttribute("data-code").get(0).attr("data-category");
+            String oldPrice = element.getElementsByAttribute("data-code").get(0).attr("data-old_price");
+            String price = element.getElementsByAttribute("data-code").get(0).attr("data-price");
+
+            nomenclatures.add(new Nomenclature(Long.parseLong(id), name, producer, categoryName, oldPrice, price, link));
+
+            currentProgressValue += nomenclatureCost;
+            updateMessage("Сбор данных по " + name);
+            updateProgress(currentProgressValue, 10000);
+        }
     }
 
     private String getUserAgent() throws IOException {
@@ -238,6 +272,8 @@ public class ParseTask extends Task<Void> {
 
             int startRowContent = startRow + 1;
 
+            int costNomenclature = 700 / nomenclatures.size();
+
             for (Nomenclature nom : nomenclatures) {
                 updateMessage("Внесение данных по " + nom.name() + " в файл excel");
                 int startColumnContent = 1;
@@ -302,11 +338,14 @@ public class ParseTask extends Task<Void> {
                 //Отклонение
                 XSSFCell deviation = content.createCell(++startColumnContent);
                 contentStyle.setWrapText(true);
-                if (sellPriceFromExcel > 0) {
-                    deviation.setCellValue((Double.parseDouble(nom.price())/sellPriceFromExcel - 1) * 100);
+                if (sellPriceFromExcel > 0 && !nom.price().equals("0.0")) {
+                    deviation.setCellValue((Double.parseDouble(nom.price()) / sellPriceFromExcel - 1) * 100);
                 }
                 deviation.setCellStyle(contentDecimalStyle);
                 sheet.setColumnWidth(startColumnContent, 3808);
+
+                currentProgressValue += costNomenclature;
+                updateProgress(currentProgressValue, 10000);
 
                 startRowContent++;
             }
