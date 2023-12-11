@@ -10,16 +10,20 @@ public class Const {
     public static final String SENSO_MED = "#medSenso";
     public static final String NIHON_BABY = "#nihonBaby";
     public static final String MIU = "#miu";
+    public static final String ROW_START = "#rowStart";
+    public static final String COLUMN_START = "#columnStart";
+    public static final String COLUMN_PRICE = "#columnPrice";
     public static final String DEFAULT_INI = """
-            *********************************07.10.2023***********************************************
+            *********************************11.12.2023***********************************************
             Файл с настройками для парсинга сайта 21vek.by
 
             Все параметры начинаются с символа #. Без этого работать не будет!!!
 
             В данном файле:
             -userAgent - userAgen, который можно взять, например, на сайте: https://www.whatismybrowser.com/guides/the-latest-user-agent/. Данные брать путем копирования самого последнего (свежего) user-agent в сучае, когда программа перестала работать (иногда это может решить проблему).
-            -categories - перечень категорий для вставки в адресную строку.  Например, diapers (подгузники) или underpads (пеленки).
             -senso, babySenso, medSenso, nihonBaby, miu - в данных параметрах пишется наименование брендов, которые нужно вставить в качестве фильта в адресную строку. Например, sensoBaby = senso_baby.
+            -columnStart и rowStart - номера колонки и строки, с которой начинается поиск кодов товара 21vek. По дефолту columnStart = 17, rowStart = 5.
+            -columnPrice - номер колонки в excel, из которой нужно получить данные.
 
             *********************************Настройки************************************************
 
@@ -33,6 +37,14 @@ public class Const {
             #babySenso = senso_baby
             #nihonBaby = nihon_baby
             #miu = miu
+
+            ******************************************************************************************
+            
+            **************************Настройки листа excel*******************************************
+            
+            #rowStart = 5
+            #columnStart = 17
+            #columnPrice = 14
 
             ******************************************************************************************""";
 }

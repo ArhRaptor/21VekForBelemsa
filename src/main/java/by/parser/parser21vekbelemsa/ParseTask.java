@@ -367,23 +367,45 @@ public class ParseTask extends Task<Void> {
 
     private double getSellPriceFromExcel(long id) throws IOException {
         double sellPrice = 0d;
-        int rowStart = 4;
+        int rowStart = getNumberRowOrColumn(Const.ROW_START) == -1? 4 : getNumberRowOrColumn(Const.ROW_START);
+        int column = getNumberRowOrColumn(Const.COLUMN_START) == -1? 16 : getNumberRowOrColumn(Const.COLUMN_START);
+        int columnPrice = getNumberRowOrColumn(Const.COLUMN_PRICE) == -1? 13 : getNumberRowOrColumn(Const.COLUMN_PRICE);
 
         XSSFWorkbook workbook = new XSSFWorkbook(new FileInputStream(fileRRCPath));
         XSSFSheet sheet = workbook.getSheet("Лист1");
-        for (int i = 0; i < sheet.getLastRowNum() - 1; i++) {
-            XSSFRow row = sheet.getRow(rowStart);
+        for (int i = rowStart; i < sheet.getLastRowNum() - 1; i++) {
+            XSSFRow row = sheet.getRow(i);
 
-            if (row.getCell(16) != null) {
-                if (row.getCell(16).getNumericCellValue() == id) {
-                    sellPrice = row.getCell(13).getNumericCellValue();
+            if (row.getCell(column) != null) {
+                if (row.getCell(column).getNumericCellValue() == id) {
+                    sellPrice = row.getCell(columnPrice).getNumericCellValue();
                     break;
                 }
-                rowStart++;
             }
+            rowStart++;
         }
 
         workbook.close();
         return sellPrice;
+    }
+
+    private int getNumberRowOrColumn(String param) throws IOException {
+        int result = -1;
+        BufferedReader reader = new BufferedReader(new FileReader(Const.CONFIG_FILE_NAME));
+        String line = reader.readLine();
+
+        while (line != null) {
+            if (line.contains("=")) {
+                String trimmed = line.substring(line.indexOf("=") + 1).trim();
+                if (line.startsWith(param)) {
+                    result = Integer.parseInt(trimmed) - 1;
+                    break;
+                }
+            }
+            line = reader.readLine();
+        }
+        reader.close();
+
+        return result;
     }
 }
